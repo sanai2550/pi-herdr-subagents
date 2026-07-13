@@ -73,6 +73,17 @@ pi
 
 Split placement opens each child to the right of the parent pane. Leave the variable unset, or set it to `tab`, to keep the default one-tab-per-subagent layout. Background-mode agents do not use Herdr placement.
 
+For a readable adaptive layout, use `auto` placement:
+
+```bash
+export PI_SUBAGENT_HERDR_PLACEMENT=auto
+export PI_SUBAGENT_HERDR_MAX_SPLITS=2
+export PI_SUBAGENT_HERDR_MIN_COLUMNS=50
+pi
+```
+
+`auto` opens the first child to the right, stacks the next child below it, and sends further children to new tabs. It also falls back to a tab when splitting would leave fewer than `PI_SUBAGENT_HERDR_MIN_COLUMNS` columns. The defaults are two active split children and 50 columns; closed child panes free their split slots. Set `PI_SUBAGENT_HERDR_MAX_SPLITS=0` to make `auto` always use tabs. These two limits apply only to `auto`; explicit `split` placement keeps opening right splits.
+
 ## Built-ins and overrides
 
 Agent definition precedence is:

@@ -37,6 +37,8 @@ function clearMuxRuntimeEnv(): void {
 	delete process.env.HERDR_TAB_ID;
 	delete process.env.HERDR_WORKSPACE_ID;
 	delete process.env.PI_SUBAGENT_HERDR_PLACEMENT;
+	delete process.env.PI_SUBAGENT_HERDR_MAX_SPLITS;
+	delete process.env.PI_SUBAGENT_HERDR_MIN_COLUMNS;
 	delete process.env.PI_SUBAGENT_MUX;
 	delete process.env.PI_SUBAGENT_PI_COMMAND;
 	delete process.env.PI_SUBAGENT_NAME;

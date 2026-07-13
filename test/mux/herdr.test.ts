@@ -27,6 +27,27 @@ import {
 	getHerdrTab,
 	getHerdrWorkspace,
 } from "../../src/mux/herdr.ts";
+import { resetHerdrAutoPlacementForTest } from "../../src/mux/herdr-surfaces.ts";
+
+function restoreDescriptor(
+	target: object,
+	key: string,
+	descriptor: PropertyDescriptor | undefined,
+): void {
+	if (descriptor) Object.defineProperty(target, key, descriptor);
+	else Reflect.deleteProperty(target, key);
+}
+
+function withStdoutColumns<T>(columns: number, fn: () => T): T {
+	const stdout = process.stdout as NodeJS.WriteStream & { columns?: number };
+	const descriptor = Object.getOwnPropertyDescriptor(stdout, "columns");
+	Object.defineProperty(stdout, "columns", { configurable: true, value: columns });
+	try {
+		return fn();
+	} finally {
+		restoreDescriptor(stdout, "columns", descriptor);
+	}
+}
 
 function clearMuxRuntimeEnv(): void {
 	delete process.env.CMUX_SOCKET_PATH;
@@ -41,6 +62,8 @@ function clearMuxRuntimeEnv(): void {
 	delete process.env.HERDR_TAB_ID;
 	delete process.env.HERDR_WORKSPACE_ID;
 	delete process.env.PI_SUBAGENT_HERDR_PLACEMENT;
+	delete process.env.PI_SUBAGENT_HERDR_MAX_SPLITS;
+	delete process.env.PI_SUBAGENT_HERDR_MIN_COLUMNS;
 	delete process.env.PI_SUBAGENT_MUX;
 	delete process.env.PI_SUBAGENT_NAME;
 	delete process.env.PI_SUBAGENT_SESSION;
@@ -213,6 +236,7 @@ function useFakeHerdr(mode = "available"): {
 	const screenFile = join(dir, "herdr-screen.txt");
 	writeFileSync(screenFile, "herdr line 1\nherdr line 2\n");
 	clearMuxRuntimeEnv();
+	resetHerdrAutoPlacementForTest();
 	process.env.PATH = dir;
 	process.env.FAKE_HERDR_LOG = logFile;
 	process.env.FAKE_HERDR_MODE = mode;
@@ -360,6 +384,108 @@ describe("Herdr mux backend", () => {
 			);
 			assert.doesNotMatch(log, /tab create/);
 			assert.doesNotMatch(log, /tab rename/);
+		});
+
+		it("auto placement splits right then down and sends overflow to a tab", () => {
+			const { logFile } = useFakeHerdr();
+			process.env.PI_SUBAGENT_MUX = "herdr";
+			process.env.PI_SUBAGENT_HERDR_PLACEMENT = "auto";
+
+			withStdoutColumns(120, () => {
+				assert.equal(createSurface("Agent One"), "w1:p-split-right");
+				assert.equal(createSurface("Agent Two"), "w1:p-split-down");
+				assert.equal(createSurface("Agent Three"), "w1:p2");
+			});
+
+			const log = readFileSync(logFile, "utf8");
+			assert.match(
+				log,
+				/pane split w1:p1 --direction right --cwd .* --no-focus/,
+			);
+			assert.match(
+				log,
+				/pane split w1:p-split-right --direction down --cwd .* --no-focus/,
+			);
+			assert.equal((log.match(/tab create /g) ?? []).length, 1);
+		});
+
+		it("auto placement honors custom maximum split counts", () => {
+			const { logFile } = useFakeHerdr();
+			process.env.PI_SUBAGENT_MUX = "herdr";
+			process.env.PI_SUBAGENT_HERDR_PLACEMENT = "auto";
+			process.env.PI_SUBAGENT_HERDR_MAX_SPLITS = "1";
+
+			withStdoutColumns(120, () => {
+				assert.equal(createSurface("Agent One"), "w1:p-split-right");
+				assert.equal(createSurface("Agent Two"), "w1:p2");
+			});
+
+			const log = readFileSync(logFile, "utf8");
+			assert.equal((log.match(/pane split /g) ?? []).length, 1);
+			assert.equal((log.match(/tab create /g) ?? []).length, 1);
+		});
+
+		it("auto placement falls back to tabs below the minimum width", () => {
+			const { logFile } = useFakeHerdr();
+			process.env.PI_SUBAGENT_MUX = "herdr";
+			process.env.PI_SUBAGENT_HERDR_PLACEMENT = "auto";
+			process.env.PI_SUBAGENT_HERDR_MIN_COLUMNS = "50";
+
+			withStdoutColumns(90, () => {
+				assert.equal(createSurface("Narrow Agent"), "w1:p2");
+			});
+
+			const log = readFileSync(logFile, "utf8");
+			assert.doesNotMatch(log, /pane split/);
+			assert.match(log, /tab create /);
+		});
+
+		it("auto placement honors custom minimum column counts", () => {
+			const { logFile } = useFakeHerdr();
+			process.env.PI_SUBAGENT_MUX = "herdr";
+			process.env.PI_SUBAGENT_HERDR_PLACEMENT = "auto";
+			process.env.PI_SUBAGENT_HERDR_MIN_COLUMNS = "40";
+
+			withStdoutColumns(90, () => {
+				assert.equal(createSurface("Compact Agent"), "w1:p-split-right");
+			});
+
+			const log = readFileSync(logFile, "utf8");
+			assert.match(log, /pane split w1:p1 --direction right/);
+			assert.doesNotMatch(log, /tab create/);
+		});
+
+		it("auto placement can disable splits with a zero maximum", () => {
+			const { logFile } = useFakeHerdr();
+			process.env.PI_SUBAGENT_MUX = "herdr";
+			process.env.PI_SUBAGENT_HERDR_PLACEMENT = "auto";
+			process.env.PI_SUBAGENT_HERDR_MAX_SPLITS = "0";
+
+			withStdoutColumns(160, () => {
+				assert.equal(createSurface("Tabbed Agent"), "w1:p2");
+			});
+
+			const log = readFileSync(logFile, "utf8");
+			assert.doesNotMatch(log, /pane split/);
+			assert.match(log, /tab create /);
+		});
+
+		it("auto placement reuses a split slot after its pane closes", () => {
+			const { logFile } = useFakeHerdr();
+			process.env.PI_SUBAGENT_MUX = "herdr";
+			process.env.PI_SUBAGENT_HERDR_PLACEMENT = "auto";
+			process.env.PI_SUBAGENT_HERDR_MAX_SPLITS = "1";
+
+			withStdoutColumns(120, () => {
+				const first = createSurface("Agent One");
+				assert.equal(first, "w1:p-split-right");
+				closeSurface(first);
+				assert.equal(createSurface("Agent Two"), "w1:p-split-right");
+			});
+
+			const log = readFileSync(logFile, "utf8");
+			assert.equal((log.match(/pane split /g) ?? []).length, 2);
+			assert.doesNotMatch(log, /tab create/);
 		});
 
 		it("creates child agent Herdr tab labels without positional numbering", () => {

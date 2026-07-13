@@ -18,6 +18,7 @@ import {
 	runHerdrPaneCommand,
 	sendHerdrPaneEnter,
 } from "./herdr.ts";
+import { forgetHerdrAutoSplit } from "./herdr-surfaces.ts";
 
 export function sendCommand(surface: string, command: string): void {
 	const backend = requireMuxBackend();
@@ -195,6 +196,7 @@ export function closeSurface(surface: string): void {
 	}
 	if (backend === "herdr") {
 		closeHerdrPane(surface);
+		forgetHerdrAutoSplit(surface);
 		return;
 	}
 	throw new Error("Unsupported mux backend");
