@@ -72,12 +72,18 @@ export function adaptNicobailonAgent(content, options = {}) {
   const trustProject = bool(frontmatter.inheritProjectContext, true);
   const inheritSkills = bool(frontmatter.inheritSkills, true);
   const tools = adaptTools(frontmatter.tools);
+  const model = options.modelOverride?.model ?? frontmatter.model;
+  const thinking = options.modelOverride?.thinking ?? frontmatter.thinking;
 
   const lines = [
     yamlLine("name", name),
     yamlLine("description", frontmatter.description),
-    yamlLine("model", frontmatter.model),
-    yamlLine("thinking", frontmatter.thinking),
+    yamlLine("model", model),
+    yamlLine("thinking", thinking),
+    yamlLine(
+      "allow-model-override",
+      options.modelOverride ? "false" : undefined,
+    ),
     yamlLine("mode", "interactive"),
     yamlLine("async", "true"),
     yamlLine("auto-exit", "true"),

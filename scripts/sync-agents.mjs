@@ -3,6 +3,7 @@ import { execFileSync } from "node:child_process";
 import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { adaptNicobailonAgent } from "./lib/nicobailon-agent-adapter.mjs";
+import { BUNDLED_AGENT_MODEL_OVERRIDES } from "./lib/agent-model-overrides.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const lock = JSON.parse(readFileSync(join(root, "sources.lock.json"), "utf8"));
@@ -29,7 +30,11 @@ if (actualCommit !== lock.nicobailon.commit) {
 const results = [];
 for (const file of readdirSync(sourceDir).filter((name) => name.endsWith(".md")).sort()) {
   const source = readFileSync(join(sourceDir, file), "utf8");
-  const adapted = adaptNicobailonAgent(source, { fallbackName: basename(file, ".md") });
+  const fallbackName = basename(file, ".md");
+  const adapted = adaptNicobailonAgent(source, {
+    fallbackName,
+    modelOverride: BUNDLED_AGENT_MODEL_OVERRIDES[fallbackName],
+  });
   const target = join(targetDir, file);
   const current = existsSync(target) ? readFileSync(target, "utf8") : null;
   const changed = current !== adapted.markdown;

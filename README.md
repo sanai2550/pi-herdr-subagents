@@ -29,6 +29,23 @@ pi install npm:pi-subagents-herdr
 
 Chỉ dùng **một** trong các lệnh trên. Không cài thêm hai upstream vì cả hai đều đăng ký tool `subagent` và có thể gây collision.
 
+## Model bundled
+
+Package này pin model theo từng persona và yêu cầu provider `cliproxy` có các model `cli/gpt-5.6-sol`, `cli/gpt-5.6-terra` và `cli/gpt-5.6-luna`:
+
+| Agent | Model | Thinking |
+| --- | --- | --- |
+| `context-builder` | `cliproxy/cli/gpt-5.6-sol` | `medium` |
+| `delegate` | `cliproxy/cli/gpt-5.6-sol` | kế thừa parent |
+| `oracle` | `cliproxy/cli/gpt-5.6-sol` | `max` |
+| `planner` | `cliproxy/cli/gpt-5.6-sol` | `xhigh` |
+| `researcher` | `cliproxy/cli/gpt-5.6-terra` | `medium` |
+| `reviewer` | `cliproxy/cli/gpt-5.6-sol` | `high` |
+| `scout` | `cliproxy/cli/gpt-5.6-luna` | `low` |
+| `worker` | `cliproxy/cli/gpt-5.6-sol` | `medium` |
+
+Các default này dùng `allow-model-override: false`, nên launch-time model override bị bỏ qua. Nếu máy khác không có provider/model tương ứng, hãy override toàn bộ agent definition trong `~/.pi/agent/agents` hoặc `<project>/.pi/agents`.
+
 ## Chạy trong Herdr
 
 Mở `pi` từ một pane do Herdr quản lý. Có thể ép runtime dùng Herdr:

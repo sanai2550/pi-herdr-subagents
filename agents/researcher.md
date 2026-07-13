@@ -1,7 +1,9 @@
 ---
 name: researcher
 description: Autonomous web researcher — searches, evaluates, and synthesizes a focused research brief
+model: cliproxy/cli/gpt-5.6-terra
 thinking: medium
+allow-model-override: false
 mode: interactive
 async: true
 auto-exit: true

@@ -223,6 +223,34 @@ describe("resume model launch configuration", () => {
 		]);
 	});
 
+	it("preserves max thinking in resume model refs", () => {
+		const overridden = resolveResumeLaunchMetadataForInvocationForTest(
+			{
+				version: 1,
+				timestamp: "2026-05-08T00:00:00.000Z",
+				name: "oracle",
+				mode: "interactive",
+				sessionMode: "fork",
+				parentClosePolicy: "terminate",
+				async: true,
+				model: "cliproxy/cli/gpt-5.6-sol",
+				modelRef: "cliproxy/cli/gpt-5.6-sol:max",
+				allowModelOverride: true,
+				denyTools: [],
+				noContextFiles: false,
+				noSession: false,
+				agentConfigDir: "/tmp",
+				cwd: "/tmp",
+				boundarySystemPrompt: true,
+			},
+			"cliproxy/cli/gpt-5.6-sol:max",
+		);
+
+		assert.equal(overridden?.model, "cliproxy/cli/gpt-5.6-sol");
+		assert.equal(overridden?.thinking, "max");
+		assert.equal(overridden?.modelRef, "cliproxy/cli/gpt-5.6-sol:max");
+	});
+
 	it("records ignored model and thinking overrides separately", () => {
 		const metadata = resolveResumeLaunchMetadataForInvocationForTest(
 			{

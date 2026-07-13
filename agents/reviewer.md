@@ -1,7 +1,9 @@
 ---
 name: reviewer
 description: Versatile review specialist for code diffs, plans, proposed solutions, codebase health, and PR/issue validation
+model: cliproxy/cli/gpt-5.6-sol
 thinking: high
+allow-model-override: false
 mode: interactive
 async: true
 auto-exit: true

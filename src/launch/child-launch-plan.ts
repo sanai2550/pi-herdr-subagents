@@ -62,7 +62,7 @@ export interface ChildLaunchPlanOptions {
 	parentThinking?: string;
 }
 
-const THINKING_LEVELS = new Set(["off", "minimal", "low", "medium", "high", "xhigh"]);
+const THINKING_LEVELS = new Set(["off", "minimal", "low", "medium", "high", "xhigh", "max"]);
 
 export function splitModelRefThinking(
 	model: string | undefined,

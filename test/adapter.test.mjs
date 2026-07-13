@@ -6,6 +6,7 @@ import {
   adaptNicobailonAgent,
   parseAgentMarkdown,
 } from "../scripts/lib/nicobailon-agent-adapter.mjs";
+import { BUNDLED_AGENT_MODEL_OVERRIDES } from "../scripts/lib/agent-model-overrides.mjs";
 
 test("parses Nicobailon frontmatter and body", () => {
   const parsed = parseAgentMarkdown(`---
@@ -61,6 +62,20 @@ Execute the delegated task.
   assert.match(result.markdown, /spawning: false/);
 });
 
+test("applies deterministic bundled model overrides", () => {
+  const result = adaptNicobailonAgent(`---
+name: oracle
+thinking: high
+---
+
+Protect consistency.
+`, { modelOverride: BUNDLED_AGENT_MODEL_OVERRIDES.oracle });
+
+  assert.match(result.markdown, /model: cliproxy\/cli\/gpt-5\.6-sol/);
+  assert.match(result.markdown, /thinking: max/);
+  assert.match(result.markdown, /allow-model-override: false/);
+});
+
 test("adapts every pinned Nicobailon agent while preserving its original prompt", () => {
   const root = resolve(import.meta.dirname, "..");
   const sourceDir = join(root, "upstreams", "nicobailon-pi-subagents", "agents");
@@ -70,7 +85,10 @@ test("adapts every pinned Nicobailon agent while preserving its original prompt"
   for (const file of files) {
     const source = readFileSync(join(sourceDir, file), "utf8");
     const parsed = parseAgentMarkdown(source);
-    const adapted = adaptNicobailonAgent(source);
+    const name = file.replace(/\.md$/, "");
+    const adapted = adaptNicobailonAgent(source, {
+      modelOverride: BUNDLED_AGENT_MODEL_OVERRIDES[name],
+    });
     const adaptedBody = parseAgentMarkdown(adapted.markdown).body;
     assert.ok(
       adaptedBody.startsWith(`${parsed.body}\n\n## Herdr runtime compatibility`),

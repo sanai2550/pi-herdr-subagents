@@ -239,4 +239,35 @@ describe("child launch plan", () => {
 
 		assert.equal(plan.effectiveModelRef, "zai-messages/glm-5-turbo:off");
 	});
+
+	it("recognizes max thinking in model and allowed-model refs", async () => {
+		const cwd = createTestDir();
+		const plan = await buildChildLaunchPlan({
+			params: {
+				name: "decision-oracle",
+				task: "check the decision",
+				title: "Decision consistency check",
+				agent: "oracle",
+				model: "cliproxy/cli/gpt-5.6-sol:max",
+			},
+			agentDefs: {
+				model: "cliproxy/cli/gpt-5.6-sol",
+				thinking: "max",
+				allowedModels: "cliproxy/cli/gpt-5.6-sol:max",
+			},
+			parentCwd: cwd,
+			parentSessionDir: join(cwd, "parent-sessions"),
+			modelRegistry: {
+				getAvailable: () => [{
+					provider: "cliproxy",
+					id: "cli/gpt-5.6-sol",
+					thinkingLevelMap: { max: "max" },
+				}],
+			},
+		});
+
+		assert.equal(plan.effectiveModel, "cliproxy/cli/gpt-5.6-sol");
+		assert.equal(plan.effectiveThinking, "max");
+		assert.equal(plan.effectiveModelRef, "cliproxy/cli/gpt-5.6-sol:max");
+	});
 });

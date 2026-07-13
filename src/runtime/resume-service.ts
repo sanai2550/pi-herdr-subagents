@@ -74,7 +74,7 @@ export interface ResumeSessionInput {
 	thinking?: string;
 }
 
-const THINKING_LEVELS = new Set(["off", "minimal", "low", "medium", "high", "xhigh"]);
+const THINKING_LEVELS = new Set(["off", "minimal", "low", "medium", "high", "xhigh", "max"]);
 
 function splitResumeModelRef(
 	model: string,

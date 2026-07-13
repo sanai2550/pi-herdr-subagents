@@ -1,7 +1,9 @@
 ---
 name: oracle
 description: High-context decision-consistency oracle that protects inherited state and prevents drift
-thinking: high
+model: cliproxy/cli/gpt-5.6-sol
+thinking: max
+allow-model-override: false
 mode: interactive
 async: true
 auto-exit: true

@@ -1,6 +1,8 @@
 ---
 name: delegate
 description: Lightweight subagent that inherits the parent model with no default reads
+model: cliproxy/cli/gpt-5.6-sol
+allow-model-override: false
 mode: interactive
 async: true
 auto-exit: true

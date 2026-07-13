@@ -39,7 +39,7 @@ const SUBAGENT_MODEL_DESCRIPTION =
 const SUBAGENT_THINKING_DESCRIPTION =
 	"Child runtime thinking level only. Omit unless the user named a concrete thinking level for this launch. " +
 	"Do not infer thinking from quality, depth, urgency, safety, or cost language. " +
-	"Allowed: off|minimal|low|medium|high|xhigh.";
+	"Allowed: off|minimal|low|medium|high|xhigh|max.";
 
 const SubagentChildParams = Type.Object({
 	name: Type.String({ description: SUBAGENT_NAME_DESCRIPTION }),
