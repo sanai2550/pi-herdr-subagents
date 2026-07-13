@@ -233,8 +233,8 @@ describe("resume model launch configuration", () => {
 				sessionMode: "fork",
 				parentClosePolicy: "terminate",
 				async: true,
-				model: "cliproxy/cli/gpt-5.6-sol",
-				modelRef: "cliproxy/cli/gpt-5.6-sol:max",
+				model: "test-provider/reasoning-model",
+				modelRef: "test-provider/reasoning-model:max",
 				allowModelOverride: true,
 				denyTools: [],
 				noContextFiles: false,
@@ -243,12 +243,12 @@ describe("resume model launch configuration", () => {
 				cwd: "/tmp",
 				boundarySystemPrompt: true,
 			},
-			"cliproxy/cli/gpt-5.6-sol:max",
+			"test-provider/reasoning-model:max",
 		);
 
-		assert.equal(overridden?.model, "cliproxy/cli/gpt-5.6-sol");
+		assert.equal(overridden?.model, "test-provider/reasoning-model");
 		assert.equal(overridden?.thinking, "max");
-		assert.equal(overridden?.modelRef, "cliproxy/cli/gpt-5.6-sol:max");
+		assert.equal(overridden?.modelRef, "test-provider/reasoning-model:max");
 	});
 
 	it("records ignored model and thinking overrides separately", () => {

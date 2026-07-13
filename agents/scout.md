@@ -1,9 +1,7 @@
 ---
 name: scout
 description: Fast codebase recon that returns compressed context for handoff
-model: cliproxy/cli/gpt-5.6-luna
 thinking: low
-allow-model-override: false
 mode: interactive
 async: true
 auto-exit: true

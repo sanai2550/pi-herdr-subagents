@@ -29,22 +29,30 @@ pi install npm:pi-subagents-herdr
 
 Use only **one** of these commands. Do not install either upstream package alongside this one because both register the `subagent` tool and may cause a collision.
 
-## Bundled models
+## Model inheritance
 
-This package pins a model for each persona and requires the `cliproxy` provider to expose `cli/gpt-5.6-sol`, `cli/gpt-5.6-terra`, and `cli/gpt-5.6-luna`:
+The bundled personas do not pin provider-specific models. Model routing can be configured per machine in settings, supplied at launch, declared by an overriding agent definition, or inherited from the parent session as described below.
 
-| Agent | Model | Thinking |
-| --- | --- | --- |
-| `context-builder` | `cliproxy/cli/gpt-5.6-sol` | `medium` |
-| `delegate` | `cliproxy/cli/gpt-5.6-sol` | inherits from parent |
-| `oracle` | `cliproxy/cli/gpt-5.6-sol` | `max` |
-| `planner` | `cliproxy/cli/gpt-5.6-sol` | `xhigh` |
-| `researcher` | `cliproxy/cli/gpt-5.6-terra` | `medium` |
-| `reviewer` | `cliproxy/cli/gpt-5.6-sol` | `high` |
-| `scout` | `cliproxy/cli/gpt-5.6-luna` | `low` |
-| `worker` | `cliproxy/cli/gpt-5.6-sol` | `medium` |
+The bundled definitions keep persona-specific thinking levels where useful. To pin a model for an agent, override its definition in `~/.pi/agent/agents` or `<project>/.pi/agents` and add a `model: provider/model` field.
 
-These defaults use `allow-model-override: false`, so launch-time model overrides are ignored. If another machine does not provide the required provider or models, override the complete agent definitions in `~/.pi/agent/agents` or `<project>/.pi/agents`.
+You can keep machine-specific model routing in `~/.pi/agent/settings.json` instead:
+
+```json
+{
+  "subagents": {
+    "agentOverrides": {
+      "orchestrator": {
+        "model": "provider/orchestrator-model",
+        "thinking": "high"
+      }
+    },
+    "defaultModel": "provider/default-model",
+    "defaultThinkingLevel": "medium"
+  }
+}
+```
+
+For each field, a project-level `<project>/.pi/settings.json` value overrides the global value when the project is trusted. Model precedence is: settings agent override, allowed launch-time override, agent definition, settings default, then parent model. Existing resumed sessions keep their persisted model selection.
 
 ## Code search tools
 

@@ -4,6 +4,10 @@ import { dirname, join } from "node:path";
 import { getArtifactStorageRoot } from "../artifact-storage.ts";
 import type { AgentDefaults } from "../agents/definitions.ts";
 import { loadAgentDefaults as loadAgentDefaultsFromDefinitions } from "../agents/definitions.ts";
+import {
+	resolveSubagentModelSettings,
+	type ResolvedSubagentModelSettings,
+} from "../agents/settings-models.ts";
 
 import { CHILD_CONTEXT_BOUNDARY_SYSTEM_PROMPT } from "./context-boundary.ts";
 import { parseCommandWords } from "./child-command.ts";
@@ -45,10 +49,13 @@ export interface SubagentLaunchContext {
 	launchToolCallId?: string;
 	/** Override for auto-exit (used in headless mode to force auto-exit on). */
 	autoExit?: boolean;
-	/** Parent model ref to inherit when the agent frontmatter doesn't define a model. */
+	/** Parent model ref used after settings and agent-specific model fallbacks. */
 	parentModelRef?: string;
 	/** Parent thinking level to inherit when the agent frontmatter doesn't define thinking. */
 	parentThinking?: string;
+	projectTrusted?: boolean;
+	/** Explicit settings selection for tests/embedders; omit to load settings from disk. */
+	settingsModels?: ResolvedSubagentModelSettings;
 }
 
 export interface PreparedSubagentLaunch {
@@ -56,6 +63,7 @@ export interface PreparedSubagentLaunch {
 	effectiveModel?: string;
 	effectiveThinking?: string;
 	effectiveModelRef?: string;
+	modelSource?: "settings-agent" | "launch-override" | "agent" | "settings-default" | "parent";
 	effectiveTools?: string;
 	effectiveSkills?: string;
 	effectiveInjectSkills?: string;
@@ -115,11 +123,17 @@ export async function prepareSubagentLaunch(
 		modelRegistry: ctx.modelRegistry,
 		parentModelRef: ctx.parentModelRef,
 		parentThinking: ctx.parentThinking,
+		settingsModels:
+			ctx.settingsModels ??
+			resolveSubagentModelSettings(params.agent, ctx.cwd, {
+				projectTrusted: ctx.projectTrusted,
+			}),
 	});
 	const {
 		effectiveModel,
 		effectiveThinking,
 		effectiveModelRef,
+		modelSource,
 		runtimePaths,
 		subagentSessionFile,
 		sessionTitle,
@@ -140,6 +154,7 @@ export async function prepareSubagentLaunch(
 		effectiveModel,
 		effectiveThinking,
 		effectiveModelRef,
+		modelSource,
 		effectiveTools,
 		effectiveSkills,
 		effectiveInjectSkills,
@@ -301,14 +316,15 @@ export function buildPersistedSubagentLaunchMetadata(
 	systemPrompt?: string,
 ): PersistedSubagentLaunchMetadata {
 	const allowModelOverride = prepared.agentDefs?.allowModelOverride !== false;
-	const modelSource = params.model || params.thinking
-		? "launch-override"
-		: prepared.agentDefs?.model
-			? "agent"
-			: prepared.effectiveModel
-				? "parent"
-				: undefined;
-
+	const modelSource = prepared.modelSource ?? (
+		params.model || params.thinking
+			? "launch-override"
+			: prepared.agentDefs?.model || prepared.agentDefs?.thinking
+				? "agent"
+				: prepared.effectiveModel
+					? "parent"
+					: undefined
+	);
 	return {
 		version: 1,
 		timestamp: new Date().toISOString(),

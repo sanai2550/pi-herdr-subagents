@@ -87,7 +87,7 @@ export function adaptNicobailonAgent(content, options = {}) {
     yamlLine("thinking", thinking),
     yamlLine(
       "allow-model-override",
-      options.modelOverride ? "false" : undefined,
+      options.modelOverride?.model ? "false" : undefined,
     ),
     yamlLine("mode", "interactive"),
     yamlLine("async", "true"),

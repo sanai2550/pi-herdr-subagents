@@ -54,6 +54,7 @@ describe("launch coordinator", () => {
 			},
 			{
 				cwd,
+				settingsModels: {},
 				sessionManager: {
 					getSessionFile: () => parentSession,
 					getSessionId: () => "parent-session-id",
@@ -115,6 +116,7 @@ describe("launch coordinator", () => {
 			},
 			{
 				cwd,
+				settingsModels: {},
 				sessionManager: {
 					getSessionFile: () => parentSession,
 					getSessionId: () => "parent-session-id",

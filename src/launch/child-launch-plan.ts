@@ -2,6 +2,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { AgentDefaults } from "../agents/definitions.ts";
 import { assertModelAllowed } from "../agents/model-refs.ts";
+import type { ResolvedSubagentModelSettings } from "../agents/settings-models.ts";
 import { buildSubagentSessionTitle } from "../agents/titles.ts";
 import {
 	generateSubagentSessionFile,
@@ -46,6 +47,7 @@ export interface ChildLaunchPlan {
 	effectiveModel?: string;
 	effectiveThinking?: string;
 	effectiveModelRef?: string;
+	modelSource?: "settings-agent" | "launch-override" | "agent" | "settings-default" | "parent";
 	runtimePaths: ResolvedSubagentRuntimePaths;
 	subagentSessionFile: string;
 	sessionTitle?: string;
@@ -60,6 +62,7 @@ export interface ChildLaunchPlanOptions {
 	modelRegistry?: ModelRegistryLike;
 	parentModelRef?: string;
 	parentThinking?: string;
+	settingsModels?: ResolvedSubagentModelSettings;
 }
 
 const THINKING_LEVELS = new Set(["off", "minimal", "low", "medium", "high", "xhigh", "max"]);
@@ -174,11 +177,35 @@ export async function buildChildLaunchPlan(
 		return normalizeModelRef(available.model, available.thinking);
 	};
 
-	const requestedModel = params.model ?? agentDefs?.model ?? options.parentModelRef;
+	const settingsOverride = options.settingsModels?.agentOverride;
+	const requestedModel =
+		settingsOverride?.model ??
+		params.model ??
+		agentDefs?.model ??
+		options.settingsModels?.defaultModel ??
+		options.parentModelRef;
+	const modelSource = settingsOverride?.model || settingsOverride?.thinking
+		? "settings-agent" as const
+		: params.model || params.thinking
+			? "launch-override" as const
+			: agentDefs?.model || agentDefs?.thinking
+				? "agent" as const
+				: options.settingsModels?.defaultModel || options.settingsModels?.defaultThinking
+					? "settings-default" as const
+					: requestedModel
+						? "parent" as const
+						: undefined;
 	const { effectiveModel, effectiveThinking, effectiveModelRef } = resolveRef(
 		requestedModel,
-		params.thinking ?? agentDefs?.thinking ?? options.parentThinking,
-		{ resolveAlways: params.model != null, explicitThinking: params.thinking != null },
+		settingsOverride?.thinking ??
+			params.thinking ??
+			agentDefs?.thinking ??
+			options.settingsModels?.defaultThinking ??
+			options.parentThinking,
+		{
+			resolveAlways: settingsOverride?.model != null || params.model != null,
+			explicitThinking: settingsOverride?.thinking != null || params.thinking != null,
+		},
 	);
 	if (hasAllowedModels) {
 		const defaultModelRef = resolveRef(
@@ -223,6 +250,7 @@ export async function buildChildLaunchPlan(
 		effectiveModel,
 		effectiveThinking,
 		effectiveModelRef,
+		modelSource,
 		runtimePaths,
 		subagentSessionFile,
 		sessionTitle: buildSubagentSessionTitle(params),

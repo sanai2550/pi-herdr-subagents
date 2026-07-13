@@ -17,6 +17,7 @@ import "./launch/config.test.ts";
 import "./launch/resume-model-config.test.ts";
 import "./launch/env-frontmatter.test.ts";
 import "./agents/definitions-agent-list.test.ts";
+import "./agents/settings-models.test.ts";
 import "./runtime/launch-results.test.ts";
 import "./runtime/result-router.test.ts";
 import "./runtime/state.test.ts";

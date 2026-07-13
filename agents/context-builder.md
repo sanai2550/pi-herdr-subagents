@@ -1,9 +1,7 @@
 ---
 name: context-builder
 description: Analyzes requirements and codebase, generates context and meta-prompt
-model: cliproxy/cli/gpt-5.6-sol
 thinking: medium
-allow-model-override: false
 mode: interactive
 async: true
 auto-exit: true

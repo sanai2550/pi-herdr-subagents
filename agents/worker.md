@@ -1,9 +1,7 @@
 ---
 name: worker
 description: Implementation agent for normal tasks and approved oracle handoffs
-model: cliproxy/cli/gpt-5.6-sol
 thinking: medium
-allow-model-override: false
 mode: interactive
 async: true
 auto-exit: true

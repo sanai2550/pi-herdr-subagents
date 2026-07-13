@@ -240,6 +240,75 @@ describe("child launch plan", () => {
 		assert.equal(plan.effectiveModelRef, "zai-messages/glm-5-turbo:off");
 	});
 
+	it("prioritizes a settings agent override over launch and agent defaults", async () => {
+		const cwd = createTestDir();
+		const plan = await buildChildLaunchPlan({
+			params: {
+				name: "settings-reviewer",
+				task: "review settings precedence",
+				title: "Settings precedence review",
+				agent: "reviewer",
+				model: "launch-provider/launch-model",
+				thinking: "low",
+			},
+			agentDefs: {
+				model: "agent-provider/agent-model",
+				thinking: "medium",
+			},
+			settingsModels: {
+				agentOverride: {
+					model: "settings-provider/settings-model",
+					thinking: "high",
+				},
+				defaultModel: "settings-provider/default-model",
+			},
+			parentCwd: cwd,
+			parentSessionDir: join(cwd, "parent-sessions"),
+			parentModelRef: "parent-provider/parent-model",
+		});
+
+		assert.equal(plan.effectiveModelRef, "settings-provider/settings-model:high");
+		assert.equal(plan.modelSource, "settings-agent");
+	});
+
+	it("uses settings default after launch and agent-specific defaults", async () => {
+		const cwd = createTestDir();
+		const settingsDefault = await buildChildLaunchPlan({
+			params: {
+				name: "settings-worker",
+				task: "use the settings default",
+				title: "Settings default verification",
+				agent: "worker",
+			},
+			agentDefs: {},
+			settingsModels: {
+				defaultModel: "settings-provider/default-model",
+				defaultThinking: "medium",
+			},
+			parentCwd: cwd,
+			parentSessionDir: join(cwd, "parent-sessions"),
+			parentModelRef: "parent-provider/parent-model",
+		});
+		const agentDefault = await buildChildLaunchPlan({
+			params: {
+				name: "agent-worker",
+				task: "use the agent default",
+				title: "Agent default verification",
+				agent: "worker",
+			},
+			agentDefs: { model: "agent-provider/agent-model" },
+			settingsModels: { defaultModel: "settings-provider/default-model" },
+			parentCwd: cwd,
+			parentSessionDir: join(cwd, "parent-sessions"),
+			parentModelRef: "parent-provider/parent-model",
+		});
+
+		assert.equal(settingsDefault.effectiveModelRef, "settings-provider/default-model:medium");
+		assert.equal(settingsDefault.modelSource, "settings-default");
+		assert.equal(agentDefault.effectiveModelRef, "agent-provider/agent-model");
+		assert.equal(agentDefault.modelSource, "agent");
+	});
+
 	it("recognizes max thinking in model and allowed-model refs", async () => {
 		const cwd = createTestDir();
 		const plan = await buildChildLaunchPlan({
@@ -248,26 +317,26 @@ describe("child launch plan", () => {
 				task: "check the decision",
 				title: "Decision consistency check",
 				agent: "oracle",
-				model: "cliproxy/cli/gpt-5.6-sol:max",
+				model: "test-provider/reasoning-model:max",
 			},
 			agentDefs: {
-				model: "cliproxy/cli/gpt-5.6-sol",
+				model: "test-provider/reasoning-model",
 				thinking: "max",
-				allowedModels: "cliproxy/cli/gpt-5.6-sol:max",
+				allowedModels: "test-provider/reasoning-model:max",
 			},
 			parentCwd: cwd,
 			parentSessionDir: join(cwd, "parent-sessions"),
 			modelRegistry: {
 				getAvailable: () => [{
-					provider: "cliproxy",
-					id: "cli/gpt-5.6-sol",
+					provider: "test-provider",
+					id: "reasoning-model",
 					thinkingLevelMap: { max: "max" },
 				}],
 			},
 		});
 
-		assert.equal(plan.effectiveModel, "cliproxy/cli/gpt-5.6-sol");
+		assert.equal(plan.effectiveModel, "test-provider/reasoning-model");
 		assert.equal(plan.effectiveThinking, "max");
-		assert.equal(plan.effectiveModelRef, "cliproxy/cli/gpt-5.6-sol:max");
+		assert.equal(plan.effectiveModelRef, "test-provider/reasoning-model:max");
 	});
 });

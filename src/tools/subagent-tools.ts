@@ -162,6 +162,10 @@ async function launchOneSubagent(
 		modelRegistry: ctx.modelRegistry,
 		parentModelRef,
 		parentThinking,
+		projectTrusted:
+			typeof ctx.isProjectTrusted === "function"
+				? ctx.isProjectTrusted()
+				: true,
 	};
 	let running: RunningSubagent;
 	if (isBackground) {

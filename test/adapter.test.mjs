@@ -73,7 +73,7 @@ Map the codebase.
   assert.match(result.markdown, /tools: read, grep, rg, ast_grep, find/);
 });
 
-test("applies deterministic bundled model overrides", () => {
+test("applies deterministic bundled thinking overrides without pinning a model", () => {
   const result = adaptNicobailonAgent(`---
 name: oracle
 thinking: high
@@ -82,9 +82,9 @@ thinking: high
 Protect consistency.
 `, { modelOverride: BUNDLED_AGENT_MODEL_OVERRIDES.oracle });
 
-  assert.match(result.markdown, /model: cliproxy\/cli\/gpt-5\.6-sol/);
   assert.match(result.markdown, /thinking: max/);
-  assert.match(result.markdown, /allow-model-override: false/);
+  assert.doesNotMatch(result.markdown, /^model:/m);
+  assert.doesNotMatch(result.markdown, /^allow-model-override:/m);
 });
 
 test("adapts every pinned Nicobailon agent while preserving its original prompt", () => {

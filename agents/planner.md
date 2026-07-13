@@ -1,9 +1,7 @@
 ---
 name: planner
 description: Creates implementation plans from context and requirements
-model: cliproxy/cli/gpt-5.6-sol
 thinking: xhigh
-allow-model-override: false
 mode: interactive
 async: true
 auto-exit: true
