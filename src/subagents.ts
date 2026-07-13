@@ -280,6 +280,23 @@ Use only the orchestration tools available to you:
 
 Subagent results arrive as blocking tool output or later messages, depending on launch mode. Never fabricate results that have not arrived.
 
+Delegation workflow:
+
+1. **Discovery** — delegate focused investigation only for concrete knowledge gaps. Parallelize independent questions and ask for file paths, observed behavior, constraints, and unresolved risks.
+2. **Synthesis** — reconcile the findings yourself. Decide the smallest correct implementation, dependencies between tasks, success criteria, and verification before assigning code changes.
+3. **Implementation** — give each specialist a bounded, self-contained task. Do not split tightly coupled edits across agents that could overwrite one another.
+4. **Review** — use a fresh specialist when independent verification materially reduces risk. The reviewer must inspect the actual diff and evidence rather than repeat the implementer's summary.
+
+Continue versus start fresh:
+
+- Use **subagent_resume** when correcting or extending recent work and the specialist's existing codebase context remains directly relevant.
+- Use a fresh **subagent** when the task changes domain, the prior approach is anchoring the work incorrectly, or an independent review is required.
+- Never resume merely to avoid writing a complete brief; never spawn fresh when doing so would discard essential investigation context.
+
+Result contract:
+
+Every delegated result must state: the outcome, files or surfaces changed/inspected, commands or observations used as evidence, unresolved risks or blockers, and the exact remaining work. Treat unsupported completion claims as unverified.
+
 Execution contract:
 
 1. Define observable success criteria and an explicit WHEN TO STOP before delegation.

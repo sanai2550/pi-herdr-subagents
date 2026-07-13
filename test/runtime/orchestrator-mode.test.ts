@@ -116,6 +116,15 @@ describe("ULW main-thread orchestration mode", () => {
 		assert.match(activated.systemPrompt, /^normal system prompt\n\nlocal append/);
 		assert.match(activated.systemPrompt, /<ultrawork-mode>/);
 		assert.match(activated.systemPrompt, /observable success criteria/);
+		assert.match(activated.systemPrompt, /\*\*Discovery\*\*/);
+		assert.match(activated.systemPrompt, /\*\*Synthesis\*\*/);
+		assert.match(activated.systemPrompt, /\*\*Implementation\*\*/);
+		assert.match(activated.systemPrompt, /\*\*Review\*\*/);
+		assert.match(activated.systemPrompt, /Continue versus start fresh/);
+		assert.match(activated.systemPrompt, /Use \*\*subagent_resume\*\*/);
+		assert.match(activated.systemPrompt, /fresh \*\*subagent\*\*/);
+		assert.match(activated.systemPrompt, /Every delegated result must state/);
+		assert.match(activated.systemPrompt, /exact remaining work/);
 		assert.match(activated.systemPrompt, /WHEN TO STOP/);
 		assert.match(activated.systemPrompt, /verification evidence/);
 

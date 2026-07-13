@@ -14,8 +14,12 @@ Activate delegation-only orchestration in the main Pi session only when a user p
 - [x] Make activation streaming-safe and session-aware across reload/resume where supported. → Verified `steer` cannot change the active turn, queued `followUp` changes apply at the next turn, and custom session state restores on resume.
 - [x] Add visible activation feedback and explicit success/verification/stop rules. → Verified the notification and prompt contract in focused tests.
 - [x] Run focused tests, typecheck, and the full relevant suite; record any unrelated failures. → Focused tests, typecheck, sync check, and 446/447 executed full-suite tests pass; the existing macOS `/var` versus `/private/var` path assertion remains the only failure.
+- [x] Add a compact discovery → synthesis → implementation → review workflow to the ULW directive. → Verified the injected prompt names every phase without adding OMO-only tools.
+- [x] Define when to resume a specialist versus spawn a fresh one. → Verified the prompt covers context continuity, correction, and independent review.
+- [x] Require every delegated result to report evidence and remaining work. → Verified focused tests assert the result contract and stop condition together.
 
 ## Done When
 - [x] Ordinary prompts use the normal main agent; `ulw`/`ultrawork` prompts use main-thread orchestration without spawning an orchestrator persona.
 - [x] Specialist children never inherit main-thread orchestration mode.
 - [x] ULW activation preserves base instructions, avoids false positives, and has observable completion rules.
+- [x] ULW provides enough orchestration structure to coordinate multi-phase work without copying OMO's tool-specific prompt.
