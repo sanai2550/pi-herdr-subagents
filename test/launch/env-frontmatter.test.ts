@@ -61,6 +61,21 @@ describe("env frontmatter field", () => {
 		assert.equal(env["BAZ"], "value,with,commas");
 		assert.equal(typeof env.PI_SUBAGENT_NAME, "string");
 		assert.equal(env.PI_PACKAGE_DIR, "");
+		assert.equal(env.PI_ORCHESTRATOR_MODE, "0");
+	});
+
+	it("does not let parent or agent env propagate orchestrator mode to children", () => {
+		const original = process.env.PI_ORCHESTRATOR_MODE;
+		process.env.PI_ORCHESTRATOR_MODE = "1";
+		try {
+			const env = getBaseSubagentEnvVarsForTest({
+				env: "PI_ORCHESTRATOR_MODE=1",
+			});
+			assert.equal(env.PI_ORCHESTRATOR_MODE, "0");
+		} finally {
+			if (original == null) delete process.env.PI_ORCHESTRATOR_MODE;
+			else process.env.PI_ORCHESTRATOR_MODE = original;
+		}
 	});
 
 	it("uses env PI_CODING_AGENT_DIR as the child config and session root", () => {

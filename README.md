@@ -80,6 +80,20 @@ Use scout to map the authentication flow.
 Use worker to implement the approved plan, then use reviewer to inspect the diff.
 ```
 
+### Main-thread orchestration with ULW
+
+Add the standalone keyword `ulw` or `ultrawork` anywhere in a main-session prompt to turn that main session into a delegation-only orchestrator for the task:
+
+```text
+ulw inspect the authentication flow, implement the fix, and verify it
+```
+
+The mode remains active while subagent results return so the main session can synthesize and continue the workflow. The next user prompt without either keyword restores the normal main-agent tools and system prompt. Keywords are matched as complete words, are case-insensitive, and are ignored inside child-agent sessions.
+
+Detection also ignores fenced code, inline code, slash commands, and recognizable system/internal directives, so documenting `ulw` does not accidentally activate it. Mid-stream steering never changes the active turn; a queued follow-up applies its requested mode only when that follow-up starts. The mode is stored in Pi's session state so reload/resume preserves deliberate ULW behavior. Pi keeps its existing system instructions, project context, and loaded skills, then appends a concise orchestration contract with observable success, verification, and stop rules. An activation notification confirms when keyword mode turns on.
+
+`PI_ORCHESTRATOR_MODE=1` remains available for sessions that should always run as orchestrators. In both keyword and environment modes, launched children explicitly receive `PI_ORCHESTRATOR_MODE=0`, so scout, worker, reviewer, and other specialists retain their own prompts and tools.
+
 The built-in agents use `mode: interactive`. The runtime creates a new Herdr tab in the same workspace without taking focus. `auto-exit: true` closes the child after completion and returns its result to the parent.
 
 To place interactive subagents in non-focused split panes of the parent's current tab instead, set:

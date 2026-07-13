@@ -395,6 +395,10 @@ export function getBaseSubagentEnvVars(
 	if (prepared.agentDefs?.env) {
 		Object.assign(envVars, parseEnvString(prepared.agentDefs.env));
 	}
+	// Orchestrator mode belongs to the user-facing parent. Child agents must use
+	// their own definitions instead of inheriting the parent's delegation-only
+	// system prompt and tool restriction.
+	envVars.PI_ORCHESTRATOR_MODE = "0";
 	if (prepared.runtimePaths.localAgentConfigDir) {
 		envVars.PI_CODING_AGENT_DIR = prepared.runtimePaths.localAgentConfigDir;
 	} else if (process.env.PI_CODING_AGENT_DIR) {
