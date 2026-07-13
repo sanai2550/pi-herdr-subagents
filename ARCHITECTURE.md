@@ -2,7 +2,7 @@
 
 ## Decision
 
-Repo này là một Pi package độc lập. Nó fork runtime Edxeth trong `src/` và bundle agent definitions đã chuyển đổi trong `agents/`.
+This repository is a standalone Pi package. It forks the Edxeth runtime into `src/` and bundles converted agent definitions in `agents/`.
 
 ```text
 development/update time
@@ -23,61 +23,61 @@ Pi -> src/index.ts -> bundled agent discovery
  Herdr tab -> child Pi -> session JSONL/sidecar -> parent result
 ```
 
-Upstream checkouts và sync adapter chỉ là developer tooling. Chúng không nằm trong npm tarball và không cần tồn tại trên máy người cài.
+The upstream checkouts and sync adapter are developer tooling only. They are not included in the npm tarball and do not need to exist on the installer's machine.
 
-## Vì sao chỉ fork một runtime
+## Why only one runtime is forked
 
-1. Hai upstream cùng tên `pi-subagents` và cùng đăng ký public tool `subagent`.
-2. Nicobailon phát triển với Pi 0.74.x; Edxeth yêu cầu Pi >=0.79. Import hai runtime cùng lúc tạo API/version conflict.
-3. Foreground runtime Nicobailon dựa trên `pi --mode json -p` và stdout JSONL. Herdr trả pane ID nên port transport vào đó buộc viết lại streaming, timeout, fallback và lifecycle.
-4. Edxeth đã có Herdr backend hoàn chỉnh: detect current pane, tạo tab không focus, gửi command, theo dõi child session/exit sidecar, route result và cleanup.
+1. Both upstream packages are named `pi-subagents` and register the public `subagent` tool.
+2. Nicobailon was developed against Pi 0.74.x, while Edxeth requires Pi >=0.79. Importing both runtimes creates API and version conflicts.
+3. Nicobailon's foreground runtime relies on `pi --mode json -p` and stdout JSONL. Porting that transport to Herdr pane IDs would require rewriting streaming, timeout, fallback, and lifecycle handling.
+4. Edxeth already provides a complete Herdr backend: it detects the current pane, creates a tab without taking focus, sends commands, monitors the child session and exit sidecar, routes the result, and cleans up.
 
-Vì vậy source runtime Edxeth được fork trực tiếp; persona/system prompts Nicobailon trở thành builtin data provider.
+Therefore, the Edxeth runtime source is forked directly, while the Nicobailon personas/system prompts become a built-in data provider.
 
-## Builtin discovery contract
+## Built-in discovery contract
 
-`src/agents/definitions.ts` đọc lần lượt:
+`src/agents/definitions.ts` reads definitions in this order:
 
-1. package `agents/` với source `builtin`;
-2. `$PI_CODING_AGENT_DIR/agents` với source `global`;
-3. `<cwd>/.pi/agents` với source `project`.
+1. package `agents/` with source `builtin`;
+2. `$PI_CODING_AGENT_DIR/agents` with source `global`;
+3. `<cwd>/.pi/agents` with source `project`.
 
-Definitions sau ghi đè definitions trước theo `name`. Nhờ vậy package hoạt động ngay sau install nhưng người dùng vẫn có quyền override từng persona.
+Later definitions override earlier definitions with the same `name`. This makes the package work immediately after installation while preserving the user's ability to override individual personas.
 
-Mỗi builtin định nghĩa:
+Each built-in definition includes:
 
-- body Nicobailon ở đầu system prompt;
-- `system-prompt: replace|append` rõ ràng;
-- `mode: interactive` và `auto-exit: true`;
-- `async: true`, `spawning: false`;
-- project context, skills và session mode đã map;
-- `caller_ping` thay hai supervisor tools chỉ có trong runtime Nicobailon.
+- the Nicobailon body at the beginning of the system prompt;
+- an explicit `system-prompt: replace|append`;
+- `mode: interactive` and `auto-exit: true`;
+- `async: true` and `spawning: false`;
+- mapped project context, skills, and session mode settings;
+- `caller_ping` in place of the two supervisor tools available only in the Nicobailon runtime.
 
-Edxeth mặc định tạo một Herdr **tab** mới trong workspace cha. Nếu cần split pane, thay đổi thuộc placement strategy của `src/mux/`, không thuộc agent adapter.
+By default, Edxeth creates a new Herdr **tab** in the parent workspace. Supporting a split pane would be a placement-strategy change in `src/mux/`, not an agent-adapter change.
 
 ## Package boundary
 
-Tarball publish chỉ chứa:
+The published tarball contains only:
 
-- `src/**/*.ts` — extension/runtime, gồm test helpers được export để giữ compatibility với public API của runtime fork;
-- `agents/**/*.md` — builtin personas;
-- README, architecture, license và third-party notices.
+- `src/**/*.ts` — the extension/runtime, including exported test helpers retained for compatibility with the forked runtime's public API;
+- `agents/**/*.md` — built-in personas;
+- the README, architecture document, license, and third-party notices.
 
-`upstreams/`, tests, sync scripts và local dependencies không được ship nhờ allowlist `files` trong `package.json`.
+`upstreams/`, tests, sync scripts, and local dependencies are excluded by the `files` allowlist in `package.json`.
 
-## Giới hạn
+## Limitations
 
-- `caller_ping` là ping-and-exit rồi parent resume, không phải live request/reply như native supervisor channel Nicobailon.
-- `output`, `defaultReads`, `defaultProgress` chưa được tự động hóa.
-- Chains, worktrees, acceptance gates, watchdog, memory và budgets của Nicobailon không được port; runtime Edxeth vẫn giữ những capability riêng của nó.
-- Interactive Herdr cần parent Pi có UI và chạy trong Herdr. Headless `pi -p` dùng background policy của runtime.
-- Phiên Codex tạo package không có `HERDR_ENV=1`, vì vậy live Herdr smoke phải chạy từ một Herdr pane thật.
+- `caller_ping` performs a ping-and-exit followed by a parent resume; it is not a live request/reply channel like Nicobailon's native supervisor channel.
+- `output`, `defaultReads`, and `defaultProgress` are not automated.
+- Nicobailon's chains, worktrees, acceptance gates, watchdog, memory, and budgets have not been ported; the Edxeth runtime retains its own capabilities.
+- Interactive Herdr requires a parent Pi UI running inside Herdr. Headless `pi -p` uses the runtime's background policy.
+- The Codex session used to build this package did not have `HERDR_ENV=1`, so the live Herdr smoke test must run from an actual Herdr pane.
 
 ## Verification
 
-1. Adapter test giữ nguyên prompt gốc trước compatibility appendix.
-2. Builtin discovery test xác nhận đủ 8 persona và precedence override.
-3. TypeScript typecheck xác nhận fork build được với Pi peer APIs.
-4. Full runtime test bao gồm fake-Herdr mux và interactive-launch parity.
-5. `npm pack --dry-run` xác nhận tarball chứa runtime + agents và không chứa upstreams.
-6. Live Herdr smoke là gate cuối khi chạy trong Herdr session.
+1. The adapter test preserves the original prompt before the compatibility appendix.
+2. The built-in discovery test verifies all eight personas and override precedence.
+3. TypeScript typechecking verifies that the fork builds against the Pi peer APIs.
+4. The full runtime test suite covers the fake-Herdr multiplexer and interactive-launch parity.
+5. `npm pack --dry-run` verifies that the tarball contains the runtime and agents but excludes upstream checkouts.
+6. A live Herdr smoke test is the final gate when running inside a Herdr session.
