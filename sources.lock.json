@@ -1,0 +1,12 @@
+{
+  "nicobailon": {
+    "repository": "https://github.com/nicobailon/pi-subagents.git",
+    "commit": "c940fe20e86d9ba429eebcac809ec79d478ef206",
+    "path": "upstreams/nicobailon-pi-subagents"
+  },
+  "edxeth": {
+    "repository": "https://github.com/edxeth/pi-subagents.git",
+    "commit": "f445a178d14eb6d55d8f60d6aeca132713c8c188",
+    "path": "upstreams/edxeth-pi-subagents"
+  }
+}
