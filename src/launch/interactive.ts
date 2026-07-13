@@ -72,7 +72,9 @@ export async function launchInteractiveSubagent(
 	});
 	const surfacePreCreated = !!options?.surface;
 	const surfaceName = prepared.sessionTitle ?? params.name;
-	const surface = options?.surface ?? createSurface(surfaceName);
+	const surface =
+		options?.surface ??
+		createSurface(surfaceName, { paneLabel: params.name });
 	traceSubagentLaunch("interactive.surface", {
 		id,
 		name: params.name,

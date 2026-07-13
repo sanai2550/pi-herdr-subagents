@@ -305,7 +305,7 @@ export async function resumeSubagentSession(
 		});
 	} else {
 		const surfaceName = invocationMetadata?.sessionTitle ?? displayName;
-		const surface = createSurface(surfaceName);
+		const surface = createSurface(surfaceName, { paneLabel: name });
 		await new Promise<void>((resolve) =>
 			setTimeout(resolve, runtime.getShellReadyDelayMs()),
 		);

@@ -204,6 +204,15 @@ if [ "$1" = "pane" ] && [ "$2" = "close" ]; then
   exit 0
 fi
 
+if [ "$1" = "pane" ] && [ "$2" = "rename" ]; then
+  if [ "$mode" = "pane-rename-api-error" ]; then
+    printf '%s\n' '{"error":{"code":"permission_denied","message":"fake pane rename refused"},"id":"cli:pane:rename"}'
+    exit 1
+  fi
+  printf '%s\n' '{"id":"cli:pane:rename","result":{"type":"pane_renamed"}}'
+  exit 0
+fi
+
 if [ "$1" = "tab" ] && [ "$2" = "close" ]; then
   printf '%s\n' '{"id":"cli:tab:close","result":{"type":"ok"}}'
   exit 0
@@ -375,13 +384,19 @@ describe("Herdr mux backend", () => {
 			process.env.PI_SUBAGENT_MUX = "herdr";
 			process.env.PI_SUBAGENT_HERDR_PLACEMENT = " SpLiT ";
 
-			assert.equal(createSurface("Herdr Child"), "w1:p-split-right");
+			assert.equal(
+				createSurface("[planner] Herdr child", {
+					paneLabel: "amc-access-planner",
+				}),
+				"w1:p-split-right",
+			);
 
 			const log = readFileSync(logFile, "utf8");
 			assert.match(
 				log,
 				/pane split w1:p1 --direction right --cwd .* --no-focus/,
 			);
+			assert.match(log, /pane rename w1:p-split-right amc-access-planner/);
 			assert.doesNotMatch(log, /tab create/);
 			assert.doesNotMatch(log, /tab rename/);
 		});
@@ -406,6 +421,8 @@ describe("Herdr mux backend", () => {
 				log,
 				/pane split w1:p-split-right --direction down --cwd .* --no-focus/,
 			);
+			assert.match(log, /pane rename w1:p-split-right Agent One/);
+			assert.match(log, /pane rename w1:p-split-down Agent Two/);
 			assert.equal((log.match(/tab create /g) ?? []).length, 1);
 		});
 
@@ -534,9 +551,28 @@ describe("Herdr mux backend", () => {
 						`pane split w1:p1 --direction ${direction} --cwd .* --no-focus`,
 					),
 				);
+				assert.match(
+					log,
+					new RegExp(`pane rename w1:p-split-${direction} Herdr Split`),
+				);
 				assert.doesNotMatch(log, /tab create/);
 			});
 		}
+
+		it("surfaces Herdr pane rename failures after creating a split", () => {
+			const { logFile } = useFakeHerdr("pane-rename-api-error");
+			process.env.PI_SUBAGENT_MUX = "herdr";
+			process.env.PI_SUBAGENT_HERDR_PLACEMENT = "split";
+
+			assert.throws(
+				() => createSurface("Named Agent"),
+				/Herdr pane rename failed: permission_denied: fake pane rename refused/,
+			);
+
+			const log = readFileSync(logFile, "utf8");
+			assert.match(log, /pane split w1:p1 --direction right/);
+			assert.match(log, /pane rename w1:p-split-right Named Agent/);
+		});
 
 		for (const direction of ["left", "up"] as const) {
 			it(`rejects unsupported ${direction} Herdr splits honestly`, () => {

@@ -2,6 +2,7 @@ import {
 	createHerdrTabSurface,
 	getHerdrCurrentPane,
 	listHerdrTabs,
+	renameHerdrPane,
 	renameHerdrTab,
 	renameHerdrWorkspace,
 	splitHerdrPane,
@@ -100,6 +101,15 @@ function rememberAutoSplit(parentPaneId: string, paneId: string): void {
 	autoSplitParentByPane.set(paneId, parentPaneId);
 }
 
+function createNamedHerdrSplit(
+	name: string,
+	options: Parameters<typeof splitHerdrPane>[0],
+): ReturnType<typeof splitHerdrPane> {
+	const pane = splitHerdrPane(options);
+	renameHerdrPane(pane.paneId, name);
+	return pane;
+}
+
 export function forgetHerdrAutoSplit(paneId: string): void {
 	const parentPaneId = autoSplitParentByPane.get(paneId);
 	if (!parentPaneId) return;
@@ -122,11 +132,11 @@ function herdrTabPosition(workspaceId: string, tabId: string): number | undefine
 	return index === -1 ? undefined : index + 1;
 }
 
-export function createHerdrSurface(name: string): string {
+export function createHerdrSurface(name: string, paneLabel = name): string {
 	const parentPane = getHerdrCurrentPane();
 	const placement = getHerdrSurfacePlacement();
 	if (placement === "split") {
-		return splitHerdrPane({
+		return createNamedHerdrSplit(paneLabel, {
 			paneId: parentPane.paneId,
 			direction: "right",
 			cwd: process.cwd(),
@@ -139,7 +149,7 @@ export function createHerdrSurface(name: string): string {
 			activeSplits.length < getAutoMaxSplits() &&
 			hasRoomForAutoSplit(activeSplits.length, getAutoMinColumns())
 		) {
-			const pane = splitHerdrPane({
+			const pane = createNamedHerdrSplit(paneLabel, {
 				paneId: activeSplits.at(-1) ?? parentPane.paneId,
 				direction: activeSplits.length === 0 ? "right" : "down",
 				cwd: process.cwd(),
@@ -171,12 +181,12 @@ export function createHerdrSurface(name: string): string {
 }
 
 export function createHerdrSplit(
-	_name: string,
+	name: string,
 	direction: SurfaceSplitDirection,
 	fromSurface?: string,
 ): string {
 	assertSupportedHerdrSplitDirection(direction);
-	return splitHerdrPane({
+	return createNamedHerdrSplit(name, {
 		paneId: fromSurface,
 		direction,
 		cwd: process.cwd(),

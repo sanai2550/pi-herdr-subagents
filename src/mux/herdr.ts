@@ -497,6 +497,10 @@ export function closeHerdrPane(paneId: string): void {
 	}
 }
 
+export function renameHerdrPane(paneId: string, title: string): void {
+	runHerdrApi("pane rename", ["pane", "rename", paneId, title]);
+}
+
 export function renameHerdrTab(tabId: string, title: string): void {
 	runHerdrApi("tab rename", ["tab", "rename", tabId, title]);
 }

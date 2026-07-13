@@ -17,6 +17,10 @@ import { createZellijSurface } from "./zellij-placement.ts";
 const DEFAULT_INTERACTIVE_MIN_COLUMNS = 50;
 const DEFAULT_INTERACTIVE_MIN_ROWS = 10;
 
+export interface SurfaceCreationOptions {
+	paneLabel?: string;
+}
+
 function positiveNumber(value: unknown): number | undefined {
 	const number = typeof value === "number" ? value : Number(value);
 	return Number.isFinite(number) && number > 0 ? number : undefined;
@@ -24,7 +28,10 @@ function positiveNumber(value: unknown): number | undefined {
 
 // ── Surface creation ───────────────────────────────────────────────────────
 
-export function createSurface(name: string): string {
+export function createSurface(
+	name: string,
+	options: SurfaceCreationOptions = {},
+): string {
 	const backend = getMuxBackend();
 
 	if (backend === "cmux") {
@@ -44,7 +51,7 @@ export function createSurface(name: string): string {
 	}
 
 	if (backend === "herdr") {
-		return createHerdrSurface(name);
+		return createHerdrSurface(name, options.paneLabel);
 	}
 
 	return createSurfaceSplit(name, "right");

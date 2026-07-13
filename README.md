@@ -82,7 +82,7 @@ export PI_SUBAGENT_HERDR_MIN_COLUMNS=50
 pi
 ```
 
-`auto` opens the first child to the right, stacks the next child below it, and sends further children to new tabs. It also falls back to a tab when splitting would leave fewer than `PI_SUBAGENT_HERDR_MIN_COLUMNS` columns. The defaults are two active split children and 50 columns; closed child panes free their split slots. Set `PI_SUBAGENT_HERDR_MAX_SPLITS=0` to make `auto` always use tabs. These two limits apply only to `auto`; explicit `split` placement keeps opening right splits.
+`auto` opens the first child to the right, stacks the next child below it, and sends further children to new tabs. Split panes are labeled with their machine handle, such as `amc-access-planner`, so Herdr's sidebar identifies each subagent. It also falls back to a tab when splitting would leave fewer than `PI_SUBAGENT_HERDR_MIN_COLUMNS` columns. The defaults are two active split children and 50 columns; closed child panes free their split slots. Set `PI_SUBAGENT_HERDR_MAX_SPLITS=0` to make `auto` always use tabs. These two limits apply only to `auto`; explicit `split` placement keeps opening right splits.
 
 ## Built-ins and overrides
 
