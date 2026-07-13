@@ -2,6 +2,8 @@ import type { AgentDefaults } from "../agents/definitions.ts";
 import { isSetTabTitleToolEnabled } from "../agents/titles.ts";
 import {
 	CALLER_PING_TOOL_NAME,
+	AST_GREP_TOOL_NAME,
+	RG_TOOL_NAME,
 	SET_TAB_TITLE_TOOL_NAME,
 	SPAWNING_TOOL_NAMES,
 	SUBAGENT_DONE_TOOL_NAME,
@@ -25,6 +27,8 @@ const BUILTIN_TOOL_NAMES = new Set([
 const KNOWN_TOOL_NAMES = new Set<string>([
 	...BUILTIN_TOOL_NAMES,
 	CALLER_PING_TOOL_NAME,
+	RG_TOOL_NAME,
+	AST_GREP_TOOL_NAME,
 	SUBAGENT_DONE_TOOL_NAME,
 	SET_TAB_TITLE_TOOL_NAME,
 ]);

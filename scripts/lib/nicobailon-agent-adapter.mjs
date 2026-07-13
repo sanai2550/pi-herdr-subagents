@@ -52,7 +52,12 @@ function adaptTools(value) {
     .map((tool) => tool.trim())
     .filter(Boolean)
     .map((tool) => TOOL_ALIASES.get(tool) ?? tool);
-  return [...new Set(tools)].join(", ");
+  const expanded = [];
+  for (const tool of tools) {
+    expanded.push(tool);
+    if (tool === "grep") expanded.push("rg", "ast_grep");
+  }
+  return [...new Set(expanded)].join(", ");
 }
 
 function yamlLine(key, value) {

@@ -62,6 +62,17 @@ Execute the delegated task.
   assert.match(result.markdown, /spawning: false/);
 });
 
+test("adds explicit text and structural search tools beside grep", () => {
+  const result = adaptNicobailonAgent(`---
+name: scout
+tools: read, grep, find
+---
+
+Map the codebase.
+`);
+  assert.match(result.markdown, /tools: read, grep, rg, ast_grep, find/);
+});
+
 test("applies deterministic bundled model overrides", () => {
   const result = adaptNicobailonAgent(`---
 name: oracle

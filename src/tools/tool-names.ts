@@ -14,6 +14,8 @@ export const SET_TAB_TITLE_TOOL_NAME = "set_tab_title";
 // Child-side protocol tools provided by the bundled subagent extension:
 export const CALLER_PING_TOOL_NAME = "caller_ping";
 export const SUBAGENT_DONE_TOOL_NAME = "subagent_done";
+export const RG_TOOL_NAME = "rg";
+export const AST_GREP_TOOL_NAME = "ast_grep";
 
 /**
  * Tools that LAUNCH a subagent run. Used by the mixed-batch classifier to

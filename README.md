@@ -46,6 +46,16 @@ This package pins a model for each persona and requires the `cliproxy` provider 
 
 These defaults use `allow-model-override: false`, so launch-time model overrides are ignored. If another machine does not provide the required provider or models, override the complete agent definitions in `~/.pi/agent/agents` or `<project>/.pi/agents`.
 
+## Code search tools
+
+Bundled code-oriented agents receive three compatible search tools:
+
+- `grep` is Pi's built-in search tool and already uses ripgrep internally.
+- `rg` exposes the same ripgrep-backed search explicitly for fast regex or literal repository searches.
+- `ast_grep` parses source code and matches syntax patterns, so it can distinguish real code from matching text in comments and strings.
+
+Agents should normally start with `rg` and switch to `ast_grep` when syntax structure matters. The `ast_grep` tool is read-only: it intentionally does not expose ast-grep's rewrite options. The platform-specific ast-grep binary is installed through `@ast-grep/cli` with the package.
+
 ## Running in Herdr
 
 Start `pi` from a Herdr-managed pane. You can force the runtime to use Herdr:

@@ -3,6 +3,7 @@ import "./session/child-session-storage.test.ts";
 import "./session/exit-sidecar.test.ts";
 
 import "./tools/subagent-done.test.ts";
+import "./tools/code-search.test.ts";
 import "./tools/subagent-done-recovery.test.ts";
 import "./tools/provider-error-recovery.test.ts";
 import "./tools/subagents-view.test.ts";

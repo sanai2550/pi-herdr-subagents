@@ -12,7 +12,7 @@ session-mode: lineage-only
 trust-project: true
 no-context-files: false
 skills: none
-tools: read, grep, find, ls, bash, edit, write, caller_ping
+tools: read, grep, rg, ast_grep, find, ls, bash, edit, write, caller_ping
 parent-close-policy: terminate
 ---
 

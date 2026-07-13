@@ -80,5 +80,8 @@
   "trustedDependencies": [
     "koffi",
     "protobufjs"
-  ]
+  ],
+  "dependencies": {
+    "@ast-grep/cli": "^0.44.1"
+  }
 }

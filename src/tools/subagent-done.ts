@@ -21,6 +21,7 @@ import {
 	registerSetTabTitleTool,
 	shouldRegisterSetTabTitleTool,
 } from "./set-tab-title.ts";
+import { registerCodeSearchTools } from "./code-search.ts";
 
 const require = createRequire(import.meta.url);
 
@@ -141,6 +142,7 @@ export function installDeniedToolGuards(
 }
 
 export default function (pi: ExtensionAPI) {
+	registerCodeSearchTools(pi);
 	const typebox = optionalRequire("typebox") as typeof import("typebox") | null;
 	const doneParams = typebox?.Type?.Object
 		? typebox.Type.Object({})
