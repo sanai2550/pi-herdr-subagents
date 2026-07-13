@@ -40,6 +40,7 @@ function clearMuxRuntimeEnv(): void {
 	delete process.env.HERDR_PANE_ID;
 	delete process.env.HERDR_TAB_ID;
 	delete process.env.HERDR_WORKSPACE_ID;
+	delete process.env.PI_SUBAGENT_HERDR_PLACEMENT;
 	delete process.env.PI_SUBAGENT_MUX;
 	delete process.env.PI_SUBAGENT_NAME;
 	delete process.env.PI_SUBAGENT_SESSION;
@@ -331,6 +332,34 @@ describe("Herdr mux backend", () => {
 			);
 			assert.match(log, /tab rename w1:t2 2: Herdr Child/);
 			assert.doesNotMatch(log, /pane split/);
+		});
+
+		it("preserves tab placement when explicitly configured", () => {
+			const { logFile } = useFakeHerdr();
+			process.env.PI_SUBAGENT_MUX = "herdr";
+			process.env.PI_SUBAGENT_HERDR_PLACEMENT = "tab";
+
+			assert.equal(createSurface("Herdr Child"), "w1:p2");
+
+			const log = readFileSync(logFile, "utf8");
+			assert.match(log, /tab create --workspace w1 /);
+			assert.doesNotMatch(log, /pane split/);
+		});
+
+		it("creates normal surfaces as right splits in the parent tab when configured", () => {
+			const { logFile } = useFakeHerdr();
+			process.env.PI_SUBAGENT_MUX = "herdr";
+			process.env.PI_SUBAGENT_HERDR_PLACEMENT = " SpLiT ";
+
+			assert.equal(createSurface("Herdr Child"), "w1:p-split-right");
+
+			const log = readFileSync(logFile, "utf8");
+			assert.match(
+				log,
+				/pane split w1:p1 --direction right --cwd .* --no-focus/,
+			);
+			assert.doesNotMatch(log, /tab create/);
+			assert.doesNotMatch(log, /tab rename/);
 		});
 
 		it("creates child agent Herdr tab labels without positional numbering", () => {

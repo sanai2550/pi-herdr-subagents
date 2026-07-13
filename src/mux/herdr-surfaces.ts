@@ -37,6 +37,12 @@ function isSubagentProcess(): boolean {
 	return !!(process.env.PI_SUBAGENT_NAME || process.env.PI_SUBAGENT_SESSION);
 }
 
+function shouldSplitHerdrSurface(): boolean {
+	return (
+		process.env.PI_SUBAGENT_HERDR_PLACEMENT?.trim().toLowerCase() === "split"
+	);
+}
+
 function herdrTabPosition(workspaceId: string, tabId: string): number | undefined {
 	const tabs = listHerdrTabs(workspaceId);
 	const index = tabs.findIndex((tab) => tab.tabId === tabId);
@@ -45,6 +51,15 @@ function herdrTabPosition(workspaceId: string, tabId: string): number | undefine
 
 export function createHerdrSurface(name: string): string {
 	const parentPane = getHerdrCurrentPane();
+	if (shouldSplitHerdrSurface()) {
+		return splitHerdrPane({
+			paneId: parentPane.paneId,
+			direction: "right",
+			cwd: process.cwd(),
+			focus: false,
+		}).paneId;
+	}
+
 	const surface = createHerdrTabSurface({
 		label: name,
 		cwd: process.cwd(),

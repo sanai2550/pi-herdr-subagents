@@ -53,7 +53,7 @@ Each built-in definition includes:
 - mapped project context, skills, and session mode settings;
 - `caller_ping` in place of the two supervisor tools available only in the Nicobailon runtime.
 
-By default, Edxeth creates a new Herdr **tab** in the parent workspace. Supporting a split pane would be a placement-strategy change in `src/mux/`, not an agent-adapter change.
+By default, Edxeth creates a new Herdr **tab** in the parent workspace. Setting `PI_SUBAGENT_HERDR_PLACEMENT=split` instead creates a non-focused right split from the parent pane, keeping interactive children in the parent's current tab. Background agents bypass Herdr placement.
 
 ## Package boundary
 

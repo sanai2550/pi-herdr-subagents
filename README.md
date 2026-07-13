@@ -64,6 +64,15 @@ Use worker to implement the approved plan, then use reviewer to inspect the diff
 
 The built-in agents use `mode: interactive`. The runtime creates a new Herdr tab in the same workspace without taking focus. `auto-exit: true` closes the child after completion and returns its result to the parent.
 
+To place interactive subagents in non-focused split panes of the parent's current tab instead, set:
+
+```bash
+export PI_SUBAGENT_HERDR_PLACEMENT=split
+pi
+```
+
+Split placement opens each child to the right of the parent pane. Leave the variable unset, or set it to `tab`, to keep the default one-tab-per-subagent layout. Background-mode agents do not use Herdr placement.
+
 ## Built-ins and overrides
 
 Agent definition precedence is:
